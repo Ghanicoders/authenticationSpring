@@ -3,9 +3,11 @@ package com.ghani.MysqlAuth.SecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,15 +22,18 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    @SuppressWarnings({ "deprecation", "removal" })
     @Bean
-    public SecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(customizer -> customizer.disable()).authorizeRequests(request -> request
-                .requestMatchers("register", "login")
-                .permitAll()
-                .anyRequest().authenticated())
-                .authorizeHttpRequests(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf(customizer -> customizer.disable())
+                .authorizeHttpRequests(httpRequests -> httpRequests
+                        .requestMatchers("/register", "/login").permitAll() // Allow unauthenticated access to
+                                                                            // register/login
+                        .anyRequest().authenticated() // All other requests require authentication
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
+                                                                                                              // authentication
+                                                                                                              // (e.g.,
+                                                                                                              // JWT)
                 .build();
     }
 
@@ -40,6 +45,12 @@ public class SecurityConfig {
         // Set the user details service
         provider.setUserDetailsService(userDetailsService);
         return provider;
+    }
+
+    @Bean
+    public AuthenticationManager getAuthenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+
     }
 
 }
