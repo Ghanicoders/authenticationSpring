@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ghani.MysqlAuth.SecurityConfig.JWTService;
 import com.ghani.MysqlAuth.model.User;
 import com.ghani.MysqlAuth.repo.UserRepo;
 
@@ -15,6 +16,10 @@ public class UserService {
 
     @Autowired
     UserRepo repo;
+
+    @Autowired
+    private JWTService jwtService;
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -34,7 +39,7 @@ public class UserService {
 
             // Check if authentication was successful
             if (authentication.isAuthenticated()) {
-                return "success";
+                return jwtService.generateToken(user.getUsername());
             }
 
         } catch (Exception e) {
