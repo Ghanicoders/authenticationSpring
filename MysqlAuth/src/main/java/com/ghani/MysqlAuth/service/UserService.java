@@ -31,6 +31,10 @@ public class UserService {
         return repo.save(user);
     }
 
+    public User getUserbyId(Long Id) {
+        return repo.findById(Id).orElse(null);
+    }
+
     public String verify(User user) {
         try {
             // Perform authentication

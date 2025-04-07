@@ -29,6 +29,13 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Skip the filter for /register and /login endpoints
+        if (request.getRequestURI().equals("/register") || request.getRequestURI().equals("/login")) {
+            filterChain.doFilter(request, response); // Just let the request through without applying JWT filter
+            return;
+        }
+
+        // Standard JWT extraction and validation process for other requests
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
@@ -46,10 +53,8 @@ public class JwtFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
             }
         }
         filterChain.doFilter(request, response);
     }
-
 }
